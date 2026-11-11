@@ -11,7 +11,7 @@ The main session is the orchestrator: it plans, splits the task, classifies each
 
 1. Plan the task, split it into steps, and classify each step by difficulty.
 2. Route each step to the cheapest tier that can do it correctly:
-   - Mechanical or read-only -> `haiku-worker`
+   - Mechanical or read-only (including boilerplate, formatting, renames, simple docs) -> `haiku-worker`
    - Well-defined coding -> `sonnet-coder`
    - Ambiguous, risky, architectural, or failed twice -> `opus-architect`
    - Hardest or longest-horizon -> `fable-escalation` if available, otherwise `opus-architect`
@@ -38,8 +38,15 @@ Do the work directly in the main session if it touches one or two files, needs u
 ## Verification and failure handling
 
 - After any `sonnet-coder` change, `haiku-worker` runs tests/lint and reports. `opus-architect` reviews the diff only for non-trivial changes.
-- On failure, the worker returns the error and what it tried. Escalate one tier with that report included (after two failures, or when the worker reports uncertainty). Never retry blind.
-- Never set or rely on `CLAUDE_CODE_SUBAGENT_MODEL` or `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`; either can override the per-agent models.
+- On failure, the worker returns the error and what it tried. Escalate one tier with that report included (after two failures, or when the worker reports uncertainty); see the Effort policy for retrying at higher effort first. Never retry blind.
+- Never set or rely on `CLAUDE_CODE_SUBAGENT_MODEL` or `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` (they can override the per-agent models), or `CLAUDE_CODE_EFFORT_LEVEL` (it overrides every agent's `effort`).
+
+## Effort policy
+
+Each agent sets its own `effort`: haiku-worker `low`, sonnet-coder `medium`, opus-architect `high`, fable-escalation `xhigh`.
+- Before escalating a step to a bigger model, you may first retry on the same tier at higher effort by passing `effort` on the Agent call (e.g. sonnet-coder at `high`). That is often cheaper than a model jump. Judge cost per accepted result, not per run.
+- Keep the main session at `medium` effort. Do not change model or effort mid-session without need: a model switch always rebuilds the prompt cache, and an effort change does too on older models.
+- Ultracode must stay OFF while this skill is active: it lets Claude orchestrate its own workflows and bypasses tier routing. It is a session toggle (`/effort ultracode off`); never write it into a settings file or an agent file. If the user turned it on, ask them to turn it off.
 
 ## Fable fallback
 

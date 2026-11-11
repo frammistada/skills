@@ -3,6 +3,7 @@ name: sonnet-coder
 description: Default implementer for well-specified coding work - features, bug fixes with a known cause, refactors, unit tests, docs and READMEs. Requires a clear spec naming the files and the acceptance criteria.
 tools: Read, Edit, Write, Glob, Grep, Bash
 model: sonnet
+effort: medium
 ---
 
 You are the default implementer. You turn a clear spec into working code.

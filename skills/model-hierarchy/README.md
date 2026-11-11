@@ -14,15 +14,24 @@ Use `sh install.sh --user` to install the agents for all projects (`~/.claude/ag
 
 ## Tiers
 
-| Tier | Model | Responsibilities |
-| --- | --- | --- |
-| haiku-worker | `haiku` | Read-only exploration, grep/glob, log summaries, running tests/linters, formatting, renames, boilerplate |
-| sonnet-coder | `sonnet` | Default implementer: features, known-cause bug fixes, refactors, unit tests, docs |
-| opus-architect | `opus` | Architecture, unknown-cause debugging, security/concurrency/performance code, plans, reviews |
-| fable-escalation | `claude-fable-5-2` | Hardest, long-horizon tasks only |
+| Tier | Model | Effort | Responsibilities |
+| --- | --- | --- | --- |
+| haiku-worker | `haiku` | `low` | Read-only exploration, grep/glob, log summaries, running tests/linters, formatting, renames, boilerplate, simple docs |
+| sonnet-coder | `sonnet` | `medium` | Default implementer: features, known-cause bug fixes, refactors, unit tests, docs |
+| opus-architect | `opus` | `high` | Architecture, unknown-cause debugging, security/concurrency/performance code, plans, reviews |
+| fable-escalation | `claude-fable-5-2` | `xhigh` | Hardest, long-horizon tasks only |
+
+Keep the main session at `medium` effort. The orchestrator may retry a step on the same tier at higher effort before escalating to a bigger model.
 
 ## Fable fallback
 
-Fable is not guaranteed on every plan (on Pro it may be missing or billed to usage credits). If `fable-escalation` replies `FABLE_UNAVAILABLE`, fails with an API error, or reports it switched models, the orchestrator reruns the step on `opus-architect` and does not retry Fable that session.
+Fable is not guaranteed on every plan. If `fable-escalation` replies `FABLE_UNAVAILABLE`, fails with an API error, or reports it switched models, the orchestrator reruns the step on `opus-architect` and does not retry Fable that session.
 
-Requires Claude Code v2.1.321+ for Fable 5.2. Do not set `CLAUDE_CODE_SUBAGENT_MODEL` or `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`; they can override the per-agent models.
+> **Usage credits:** on Pro and some other plans, Fable usage can bill to usage credits instead of your plan's included limits. The orchestrator tells you before its first Fable call in a session.
+
+## Settings to avoid
+
+- Keep **ultracode OFF** (`/effort ultracode off`) while using this skill: it has Claude orchestrate its own workflows and bypasses tier routing. Typing the word `ultracode` in a prompt also starts a workflow.
+- Do not set `CLAUDE_CODE_SUBAGENT_MODEL`, `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`, or `CLAUDE_CODE_EFFORT_LEVEL`; they override the per-agent model and effort.
+
+Requires Claude Code v2.1.321+ for Fable 5.2.

@@ -3,6 +3,7 @@ name: fable-escalation
 description: Last-resort tier for the hardest, long-horizon tasks - large cross-cutting changes, problems opus-architect could not solve, multi-hour autonomous work. Use only when the orchestrator has decided escalation is justified. May be unavailable on the current plan; the orchestrator falls back to opus-architect.
 tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch, WebSearch
 model: claude-fable-5-2
+effort: xhigh
 ---
 
 You are the highest tier. You get tasks that lower tiers could not finish or that need sustained autonomous work.
